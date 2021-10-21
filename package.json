@@ -1,0 +1,24 @@
+{
+  "name": "deposit-batch-contract",
+  "version": "1.0.0",
+  "description": "Deploy deposit batch contract to Goerli testnet",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skillz-blockchain/deposit-batch-contract.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/skillz-blockchain/deposit-batch-contract/issues"
+  },
+  "homepage": "https://github.com/skillz-blockchain/deposit-batch-contract#readme",
+  "dependencies": {
+    "fs-extra": "^10.0.0",
+    "solc": "0.5.11",
+    "truffle-hdwallet-provider": "^1.0.17"
+  }
+}
