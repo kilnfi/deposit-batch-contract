@@ -19,7 +19,8 @@ contract BatchDeposit is Pausable, Ownable {
     uint256 public constant kDepositAmount = 32 ether;
     IDeposit private depositContract_;
 
-    event LogSendDepositLeftover(address to, uint256 amount);
+    event LogDepositLeftover(address to, uint256 amount);
+    event LogDepositSent(bytes pubkey, bytes withdrawal);
 
     // We pass the address of a contract here because this will change
     // from one environment to another. On mainnet and testnet we use
@@ -63,6 +64,7 @@ contract BatchDeposit is Pausable, Ownable {
                 signatures[i],
                 deposit_data_roots[i]
             );
+	    emit LogDepositSent(pubkeys[i], withdrawal_credentials[i]);
             deposited = deposited.add(kDepositAmount);
         }
 
@@ -70,7 +72,7 @@ contract BatchDeposit is Pausable, Ownable {
 
         uint256 ethToReturn = msg.value.sub(deposited);
         if (ethToReturn > 0) {
-          emit LogSendDepositLeftover(msg.sender, ethToReturn);
+          emit LogDepositLeftover(msg.sender, ethToReturn);
 	  Address.sendValue(payable(msg.sender), ethToReturn);
         }
     }
