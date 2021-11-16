@@ -19,5 +19,9 @@ interface IDeposit {
         bytes calldata signature,
         bytes32 deposit_data_root
     ) external payable;
+}
 
+// Used in unit tests.
+contract DepositMock is IDeposit {
+    function deposit(bytes calldata pubkey, bytes calldata withdrawal_credentials, bytes calldata signature, bytes32 deposit_data_root) external payable {}
 }

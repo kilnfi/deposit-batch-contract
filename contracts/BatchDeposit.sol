@@ -7,47 +7,30 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 import "./IDeposit.sol";
 
-/// @notice  Batch ETH2 deposits, uses the official Deposit contract from the ETH
-///          Foundation for each atomic deposit. This contract acts as a for loop.
-///          Each deposit size will be an optimal 32 ETH.
-///
-/// @dev     The batch size has an upper bound due to the block gas limit. Each atomic
-///          deposit costs ~62,000 gas. The current block gas-limit is ~12,400,000 gas.
-///
-/// Initial Author:  Staked Securely, Inc. (https://staked.us/)
-/// Revamp Author: SkillZ (https://skillz.io)
+// Based on Stakefish and Staked.us contracts.
+//
+// We don't need fees, but we want truffle & unit tests.
 contract BatchDeposit {
     using Address for address payable;
     using SafeMath for uint256;
 
-    /*************** STORAGE VARIABLE DECLARATIONS **************/
+    uint256 public constant kDepositAmount = 32 ether;
+    IDeposit private depositContract_;
 
-    uint256 public constant DEPOSIT_AMOUNT = 32 ether;
-    // currently points at the Zinken Deposit Contract
-    address public constant DEPOSIT_CONTRACT_ADDRESS = 0x5cA1e00004366Ac85f492887AAab12d0e6418876;
-    IDeposit private constant DEPOSIT_CONTRACT = IDeposit(DEPOSIT_CONTRACT_ADDRESS);
-
-    /*************** EVENT DECLARATIONS **************/
-
-    /// @notice  Signals a refund of sent-in Ether that was extra and not required.
-    ///
-    /// @dev     The refund is sent to the msg.sender.
-    ///
-    /// @param  to - The ETH address receiving the ETH.
-    /// @param  amount - The amount of ETH being refunded.
     event LogSendDepositLeftover(address to, uint256 amount);
 
-    /////////////////////// FUNCTION DECLARATIONS BEGIN ///////////////////////
+    // We pass the address of a contract here because this will change
+    // from one environment to another. On mainnet and testnet we use
+    // the official addresses:
+    //
+    // - testnet: 0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b (https://goerli.etherscan.io/address/0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b)
+    // - mainnet: 0x00000000219ab540356cbb839cbe05303d7705fa (https://etherscan.io/address/0x00000000219ab540356cbb839cbe05303d7705fa)
+    //
+    // The migration script handles this.
+    constructor (address deposit_contract_address) {
+	depositContract_ = IDeposit(deposit_contract_address);
+    }
 
-    /********************* PUBLIC FUNCTIONS **********************/
-
-    /// @notice Submit index-matching arrays that form Phase 0 DepositData objects.
-    ///         Will create a deposit transaction per index of the arrays submitted.
-    ///
-    /// @param pubkeys - An array of BLS12-381 public keys.
-    /// @param withdrawal_credentials - An array of commitment to public key for withdrawals.
-    /// @param signatures - An array of BLS12-381 signatures.
-    /// @param deposit_data_roots - An array of the SHA-256 hash of the SSZ-encoded DepositData object.
     function batchDeposit(
         bytes[] calldata pubkeys,
         bytes[] calldata withdrawal_credentials,
@@ -65,33 +48,27 @@ contract BatchDeposit {
             "#BatchDeposit batchDeposit(): All parameter array's must have a length greater than zero."
         );
         require(
-            msg.value >= DEPOSIT_AMOUNT.mul(pubkeys.length),
+            msg.value >= kDepositAmount.mul(pubkeys.length),
             "#BatchDeposit batchDeposit(): Ether deposited needs to be at least: 32 * (parameter `pubkeys[]` length)."
         );
+
         uint256 deposited = 0;
 
-        // Loop through DepositData arrays submitting deposits
         for (uint256 i = 0; i < pubkeys.length; i++) {
-            DEPOSIT_CONTRACT.deposit{value: DEPOSIT_AMOUNT}(
+            depositContract_.deposit{value: kDepositAmount}(
                 pubkeys[i],
                 withdrawal_credentials[i],
                 signatures[i],
                 deposit_data_roots[i]
             );
-            deposited = deposited.add(DEPOSIT_AMOUNT);
+            deposited = deposited.add(kDepositAmount);
         }
-        assert(deposited == DEPOSIT_AMOUNT.mul(pubkeys.length));
+
+        assert(deposited == kDepositAmount.mul(pubkeys.length));
+
         uint256 ethToReturn = msg.value.sub(deposited);
         if (ethToReturn > 0) {
-
-          // Emit `LogSendDepositLeftover` log
           emit LogSendDepositLeftover(msg.sender, ethToReturn);
-
-          // This function doesn't guard against re-entrancy, and we're calling an
-          // untrusted address, but in this situation there is no state, etc. to
-          // take advantage of, so re-entrancy guard is unneccesary gas cost.
-          // This function uses call.value(), and handles return values/failures by
-          // reverting the transaction.
 	  Address.sendValue(payable(msg.sender), ethToReturn);
         }
     }
