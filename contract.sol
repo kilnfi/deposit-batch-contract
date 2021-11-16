@@ -281,7 +281,12 @@ contract BatchDeposit {
     /*************** STORAGE VARIABLE DECLARATIONS **************/
 
     uint256 public constant DEPOSIT_AMOUNT = 32 ether;
-    // currently points at the Mainnet Deposit Contract
+
+    // currently points at the testnet deposit contract
+    //
+    // TESTNET: 0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b
+    // MAINNET: 0x00000000219ab540356cbb839cbe05303d7705fa (https://etherscan.io/address/0x00000000219ab540356cbb839cbe05303d7705fa)
+    
     address public constant DEPOSIT_CONTRACT_ADDRESS = 0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b;
     IDeposit private constant DEPOSIT_CONTRACT = IDeposit(DEPOSIT_CONTRACT_ADDRESS);
 
