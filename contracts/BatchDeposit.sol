@@ -4,15 +4,13 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
 
 import "./IDeposit.sol";
 
 // Based on Stakefish and Staked.us contracts.
 //
 // We don't need fees, but we want truffle & unit tests.
-contract BatchDeposit is Pausable, Ownable {
+contract BatchDeposit {
     using Address for address payable;
     using SafeMath for uint256;
 
@@ -39,7 +37,7 @@ contract BatchDeposit is Pausable, Ownable {
         bytes[] calldata withdrawal_credentials,
         bytes[] calldata signatures,
         bytes32[] calldata deposit_data_roots
-    ) external payable whenNotPaused {
+    ) external payable {
         require(
             pubkeys.length == withdrawal_credentials.length &&
             pubkeys.length == signatures.length &&
@@ -75,13 +73,5 @@ contract BatchDeposit is Pausable, Ownable {
           emit LogDepositLeftover(msg.sender, ethToReturn);
 	  Address.sendValue(payable(msg.sender), ethToReturn);
         }
-    }
-
-    function pause() public onlyOwner {
-        _pause();
-    }
-
-    function unpause() public onlyOwner {
-        _unpause();
     }
 }
