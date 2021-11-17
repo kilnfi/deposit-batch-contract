@@ -9,7 +9,7 @@ module.exports = async function (deployer, network, accounts) {
 	// contract, we deploy the openzeppelin mock one.
 	await deployer.deploy(DepositMock);
 	deposit_contract_address = await DepositMock.address;
-    } else if (network === 'goerli') {
+    } else if (network === 'goerli' || network == 'goerli-fork') {
 	// https://goerli.etherscan.io/address/0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b
 	deposit_contract_address = '0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b';
     } else if (network === 'mainnet') {
