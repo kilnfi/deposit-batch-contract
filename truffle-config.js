@@ -46,12 +46,14 @@ module.exports = {
 	port: 7545,            // Standard Ethereum port (default: none)
 	network_id: "*",       // Any network (default: none)
     },
+
     goerli: {
       provider: function() {
           return new HDWalletProvider(mnemonic, "https://goerli.infura.io/v3/1b95e3c21bb347168659c40c38dc1d1a", 1)
       },
       network_id: 5
-    }
+    },
+
     // Another network with more advanced options...
     // advanced: {
     // port: 8777,             // Custom port
