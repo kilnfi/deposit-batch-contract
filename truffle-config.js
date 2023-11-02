@@ -53,6 +53,12 @@ module.exports = {
       },
       network_id: 5
     },
+    holesky: {
+      provider: function() {
+          return new HDWalletProvider(mnemonic, "https://ethereum-holesky.publicnode.com", 0)
+      },
+      network_id: 17000
+    }, 
 
     // Another network with more advanced options...
     // advanced: {
